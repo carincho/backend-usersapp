@@ -1,11 +1,14 @@
 package com.carincho.backend.usersapp.backendusersapp.controllers;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.carincho.backend.usersapp.backendusersapp.models.entities.User;
 import com.carincho.backend.usersapp.backendusersapp.services.UserService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/users")
@@ -47,14 +52,26 @@ public class UserController {
 
     }
 
+    // Se tiene que anotar con @Valid para que se apliquen las validaciones de la
+    // entidad User
+    // El objeto bindingREsult se pone después del objeto que se va a validar para
+    // que se pueda capturar los errores de validación
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody User user) {
+    public ResponseEntity<?> create(@Valid @RequestBody User user, BindingResult result) {
+
+        if (result.hasErrors()) {
+            return validation(result);
+        }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.save(user));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@RequestBody User user, @PathVariable Long id) {
+    public ResponseEntity<?> update(@Valid @RequestBody User user, @PathVariable Long id, BindingResult result) {
+
+        if (result.hasErrors()) {
+            return validation(result);
+        }
 
         Optional<User> userOptional = userService.update(user, id);
 
@@ -78,6 +95,17 @@ public class UserController {
         }
 
         return ResponseEntity.notFound().build();
+    }
+
+    private ResponseEntity<?> validation(BindingResult result) {
+
+        Map<String, String> errors = new HashMap<>();
+
+        result.getFieldErrors().forEach(err -> {
+            errors.put(err.getField(), "El campo " + err.getField() + " " + err.getDefaultMessage());
+        });
+
+        return ResponseEntity.badRequest().body(errors);
     }
 
 }
