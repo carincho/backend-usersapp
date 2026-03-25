@@ -10,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.carincho.backend.usersapp.backendusersapp.models.IUser;
 import com.carincho.backend.usersapp.backendusersapp.models.dto.UserDto;
 import com.carincho.backend.usersapp.backendusersapp.models.dto.mapper.DtoMapperUser;
 import com.carincho.backend.usersapp.backendusersapp.models.entities.Role;
@@ -57,14 +58,7 @@ public class UserServiceImpl implements UserService {
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
-        Optional<Role> optRole = roleRepository.findByName("ROLE_USER");
-        List<Role> roles = new ArrayList<>();
-
-        if (optRole.isPresent()) {
-            roles.add(optRole.orElseThrow());
-        }
-
-        user.setRoles(roles);
+        user.setRoles(getRoles(user));
 
         return DtoMapperUser
                 .builder()
@@ -87,7 +81,9 @@ public class UserServiceImpl implements UserService {
         User userOptional = null;
 
         if (o.isPresent()) {
+
             User userDb = o.orElseThrow();
+            userDb.setRoles(getRoles(user));
             userDb.setUsername(user.getUsername());
             userDb.setEmail(user.getEmail());
             userOptional = userRepository.save(userDb);
@@ -95,6 +91,26 @@ public class UserServiceImpl implements UserService {
         }
 
         return Optional.ofNullable(DtoMapperUser.builder().setUser(userOptional).build());
+    }
+
+    private List<Role> getRoles(IUser user) {
+
+        Optional<Role> optRoleUser = roleRepository.findByName("ROLE_USER");
+        List<Role> roles = new ArrayList<>();
+
+        if (optRoleUser.isPresent()) {
+            roles.add(optRoleUser.orElseThrow());
+        }
+
+        if (user.isAdmin()) {
+            Optional<Role> optRoleAdmin = roleRepository.findByName("ROLE_ADMIN");
+            if (optRoleAdmin.isPresent()) {
+                roles.add(optRoleAdmin.orElseThrow());
+
+            }
+        }
+
+        return roles;
     }
 
 }

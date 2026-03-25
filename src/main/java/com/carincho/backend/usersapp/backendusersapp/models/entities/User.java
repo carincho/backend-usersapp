@@ -2,6 +2,8 @@ package com.carincho.backend.usersapp.backendusersapp.models.entities;
 
 import java.util.List;
 
+import com.carincho.backend.usersapp.backendusersapp.models.IUser;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -11,6 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -19,7 +22,7 @@ import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "users")
-public class User {
+public class User implements IUser{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,6 +40,9 @@ public class User {
     @Email
     @Column(unique = true)
     private String email;
+
+    @Transient // con esta anotacion lo descarta para mapearla de la tabla solo es para la clase
+    private boolean admin;
 
     @ManyToMany
     @JoinTable(name = "users_roles", 
@@ -84,5 +90,16 @@ public class User {
     public void setRoles(List<Role> roles) {
         this.roles = roles;
     }
+
+    @Override
+    public boolean isAdmin() {
+        return admin;
+    }
+
+    public void setAdmin(boolean admin) {
+        this.admin = admin;
+    }
+
+    
 
 }
