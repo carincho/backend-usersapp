@@ -52,7 +52,7 @@ public class SpringSecurityConfig {
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        return http.authorizeHttpRequests(authorize -> authorize.requestMatchers(HttpMethod.GET, "/users").permitAll()
+        return http.authorizeHttpRequests(authorize -> authorize.requestMatchers(HttpMethod.GET, "/users", "/users/page/{page}").permitAll()
                 .requestMatchers(HttpMethod.GET, "/users/{id}").hasAnyRole("USER", "ADMIN") // AQUI SE OMITE LA PALABRA
                                                                                             // ROLE ANY ROLE ES VARIOS
                                                                                             // ROLES
